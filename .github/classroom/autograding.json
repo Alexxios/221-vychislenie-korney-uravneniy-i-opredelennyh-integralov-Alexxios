@@ -1,0 +1,64 @@
+{
+  "tests": [
+    {
+      "name": "Answer",
+      "setup": "sudo apt-get update && sudo apt-get install gcc-multilib nasm",
+      "run": "make all && ./integral",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": null
+    },
+    {
+      "name": "Help",
+      "setup": "",
+      "run": "make all && ./integral --help",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": null
+    },
+    {
+      "name": "Test all",
+      "setup": "",
+      "run": "make test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": null
+    },
+    {
+      "name": "Print roots",
+      "setup": "",
+      "run": "make all && ./integral --root",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": null
+    },
+    {
+      "name": "Print iterations",
+      "setup": "",
+      "run": "make all && ./integral --iterations",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": null
+    },
+    {
+      "name": "Short options",
+      "setup": "",
+      "run": "make all && ./integral -h && ./integral -r && ./integral -i",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": null
+    }
+  ]
+}
