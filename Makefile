@@ -14,9 +14,22 @@ CC += -m32 -no-pie -fno-pie
 
 LDLIBS = -lm
 
-.PHONY: all
+.DELETE_ON_ERROR:
 
+.PHONY: all
 all: integral
 
-integral: integral.c
-	$(CC) $(CFLAGS) -o $@ $< $(LDLIBS)
+integral: functions.o integral.c
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+
+functions.o: functions.asm
+	nasm -f elf32 -o $@ $<
+
+.PHONY: clean
+clean:
+	rm -rf *.o integral
+
+
+.PHONY: test
+test: $(wildcard *.c)
+	ls -la $?
