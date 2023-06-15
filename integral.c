@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <getopt.h>
 
@@ -11,12 +12,52 @@ extern double f3(double);
 double root(afunc *f, afunc *g, double a, double b, double eps1);
 double integral(afunc *f, double a, double b, double eps2);
 
+size_t iterations;
+const double eps1 = 1e-6;
 double root(afunc *f, afunc *g, double a, double b, double eps1)
 {
-    return 0;
+    iterations = 0;
+
+    double Fa = f(a) - g(a);
+    double Fb = f(b) - g(b);
+
+    if (Fa * Fb > 0)
+    {
+        perror("wrong arguments provided: F(a) * F(b) has to be <= 0\n");
+        exit(1);
+    }
+
+    double c;
+    double Fc;
+    double Feps;
+
+    do
+    {
+        c = (a * Fb - b * Fa) / (Fb - Fa);
+        Fc = f(c) - g(c);
+
+        if (Fa * Fc > 0.0)
+        {
+            a = c;
+            Fa = Fc;
+            Feps = f(c + eps1) - g(c + eps1);
+        }
+        else
+        {
+            b = c;
+            Fb = Fc;
+            Feps = f(c - eps1) - g(c - eps1);
+        }
+
+        ++iterations;
+
+    } while (Fc * Feps > 0.0);
+
+    return c;
 }
 
 const double p = 1.0 / 15.0;
+const double eps2 = 1e-6;
 double integral(afunc *f, double a, double b, double eps2)
 {
     int n = 10;
@@ -62,35 +103,37 @@ double integral(afunc *f, double a, double b, double eps2)
 
 int main(int argc, char *argv[])
 {
-    int c;
-    // int digit_optind = 0;
-
-    int F, F2;
-    double A, B, E, R;
-
-    while (1)
+    // TBA
+    struct unit
     {
-        // int this_option_optind = optind ? optind : 1;
-        int option_index = 0;
-        static struct option long_options[] = {
-            {"help", no_argument, 0, 'h'},
-            {"root", no_argument, 0, 'r'},
-            {"iterations", no_argument, 0, 'i'},
-            {"test-root", required_argument, 0, 'R'},
-            {"test-integral", required_argument, 0, 'I'},
-            {0, 0, 0, 0}};
+        afunc *f;
+        afunc *g;
+        double L;
+        double R;
+    } units[] = {
+        {f1, f2, -0.5, 3.5},
+        {f2, f3, -0.5, 1},
+        {f3, f1, -1, 1}};
 
-        c = getopt_long(argc, argv, "hriR:I:",
-                        long_options, &option_index);
-        if (c == -1)
-            break;
+    size_t N = sizeof(units) / sizeof(struct unit);
 
+    // prompt options
+    struct option long_options[] = {
+        {"help", no_argument, 0, 'h'},
+        {"root", no_argument, 0, 'r'},
+        {"iterations", no_argument, 0, 'i'},
+        {"test-root", required_argument, 0, 'R'},
+        {"test-integral", required_argument, 0, 'I'},
+        {0, 0, 0, 0}};
+
+    int c;
+    while ((c = getopt_long(argc, argv, "hriR:I:", long_options, NULL)) != -1)
+    {
         switch (c)
         {
-        case 0:
-            // TODO: root(f1, f2), root(f1, f3), root(f2, f3), integral(...)
-            printf("TBA\n");
-            break;
+            // variables for test-root & test-integral options
+            double A, B, E, R;
+            // afunc *funcs[] = {f1, f2, f3};
 
         case 'h':
             printf(
@@ -102,71 +145,65 @@ int main(int argc, char *argv[])
             break;
 
         case 'r':
-            // TODO: root(f1, f2), root(f1, f3), root(f2, f3)
-            printf("TBA\n");
+            // just print roots
+            for (size_t i = 0; i < N; i++)
+            {
+                printf("%lf ", root(units[i].f, units[i].g, units[i].L, units[i].R, eps1));
+            }
+            printf("\n");
+
             break;
 
         case 'i':
-            // TODO: #root(f1, f2) + #root(f1, f3) + #root(f2, f3)
-            printf("TBA\n");
+            // sum of iterations finding each root
+            size_t S = 0;
+
+            for (size_t i = 0; i < N; i++)
+            {
+                root(units[i].f, units[i].g, units[i].L, units[i].R, eps1);
+                S += iterations;
+            }
+
+            printf("%u\n", S);
             break;
 
         case 'R':
-            sscanf(optarg, "%d:%d:%lf:%lf:%lf:%lf", &F, &F2, &A, &B, &E, &R);
+            int F1, F2;
 
-            // TODO: root(F1, F2, A, B, E)
-            printf("TBA\n");
+            // parse argument
+            sscanf(optarg, "%d:%d:%lf:%lf:%lf:%lf", &F1, &F2, &A, &B, &E, &R);
+
+            // find root
+            double X = root(units[F1 - 1].f, units[F2 - 1].f, A, B, E);
+
+            // calculate absolute error
+            E = fabs(X - R);
+
+            // print results
+            printf("%lf %lf %lf\n", X, E, E / fabs(R));
+
+            // if (R != 0.0)
+            //     printf("%lf %lf %lf\n", X, D, D / R);
+            // else
+            //     printf("%lf %lf\n", X, D);
             break;
 
         case 'I':
+            int F;
+
+            // parse argument
             sscanf(optarg, "%d:%lf:%lf:%lf:%lf", &F, &A, &B, &E, &R);
 
-            double I = 0.0;
-            switch (F)
-            {
-            case 1:
-                I = integral(f1, A, B, E);
-                break;
-            case 2:
-                I = integral(f2, A, B, E);
-                break;
-            case 3:
-                I = integral(f3, A, B, E);
-                break;
-            default:
-                break;
-            }
+            // calculate integral
+            double I = integral(units[F - 1].f, A, B, E);
 
-            printf("%d\n[%lf, %lf]\neps=%lf\nres=%lf, real=%lf\n", F, A, B, E, I, R);
+            // calculate absolute error
+            E = fabs(I - R);
+
+            // print results
+            printf("%lf %lf %lf\n", I, E, E / fabs(R));
+
             break;
-
-            // case '0':
-            // case '1':
-            // case '2':
-            //     if (digit_optind != 0 && digit_optind != this_option_optind)
-            //         printf("digits occur in two different argv-elements.\n");
-            //     digit_optind = this_option_optind;
-            //     printf("option %c\n", c);
-            //     break;
-
-            // case 'a':
-            //     printf("option a\n");
-            //     break;
-
-            // case 'b':
-            //     printf("option b\n");
-            //     break;
-
-            // case 'c':
-            //     printf("option c with value '%s'\n", optarg);
-            //     break;
-
-            // case 'd':
-            //     printf("option d with value '%s'\n", optarg);
-            //     break;
-
-            // case '?':
-            //     break;
 
         default:
             printf("?? getopt returned character code 0%o ??\n", c);
@@ -180,6 +217,10 @@ int main(int argc, char *argv[])
             printf("%s ", argv[optind++]);
         printf("\n");
     }
-
+    if (argc == 1)
+    {
+        // TODO: root(f1, f2), root(f1, f3), root(f2, f3), integral(...)
+        printf("TBA\n");
+    }
     return 0;
 }
