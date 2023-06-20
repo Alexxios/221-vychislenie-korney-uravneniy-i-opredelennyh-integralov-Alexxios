@@ -8,9 +8,32 @@ typedef double afunc(double);
 extern double f1(double);
 extern double f2(double);
 extern double f3(double);
+double f4(double);
+double f5(double);
+double f6(double);
 
 double root(afunc *f, afunc *g, double a, double b, double eps1);
 double integral(afunc *f, double a, double b, double eps2);
+
+int cmp(const void *, const void *);
+
+// ln(1 + x)
+double f4(double x)
+{
+    return log(1 + x);
+}
+
+// x ^ {1/3}
+double f5(double x)
+{
+    return pow(x, 1.0 / 3.0);
+}
+
+// sqrt(4 - x^2)
+double f6(double x)
+{
+    return sqrt(4 - x * x);
+}
 
 size_t iterations;
 const double eps1 = 1e-6;
@@ -101,10 +124,21 @@ double integral(afunc *f, double a, double b, double eps2)
     return I_2n;
 }
 
+int cmp(const void *a, const void *b)
+{
+    double l = *(double *)a;
+    double r = *(double *)b;
+    if (l < r)
+        return -1;
+    else if (l > r)
+        return 1;
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
-    // TBA
-    struct unit
+    // store values for root() function in structure
+    struct root_unit
     {
         afunc *f;
         afunc *g;
@@ -115,7 +149,7 @@ int main(int argc, char *argv[])
         {f2, f3, -0.5, 1},
         {f3, f1, -1, 1}};
 
-    size_t N = sizeof(units) / sizeof(struct unit);
+    size_t N = sizeof(units) / sizeof(struct root_unit);
 
     // prompt options
     struct option long_options[] = {
@@ -126,6 +160,7 @@ int main(int argc, char *argv[])
         {"test-integral", required_argument, 0, 'I'},
         {0, 0, 0, 0}};
 
+    // scan options in loop
     int c;
     while ((c = getopt_long(argc, argv, "hriR:I:", long_options, NULL)) != -1)
     {
@@ -133,7 +168,7 @@ int main(int argc, char *argv[])
         {
             // variables for test-root & test-integral options
             double A, B, E, R;
-            // afunc *funcs[] = {f1, f2, f3};
+            static afunc *funcs[] = {f1, f2, f3, f4, f5, f6};
 
         case 'h':
             printf(
@@ -174,7 +209,7 @@ int main(int argc, char *argv[])
             sscanf(optarg, "%d:%d:%lf:%lf:%lf:%lf", &F1, &F2, &A, &B, &E, &R);
 
             // find root
-            double X = root(units[F1 - 1].f, units[F2 - 1].f, A, B, E);
+            double X = root(funcs[F1 - 1], funcs[F2 - 1], A, B, E);
 
             // calculate absolute error
             E = fabs(X - R);
@@ -182,10 +217,6 @@ int main(int argc, char *argv[])
             // print results
             printf("%lf %lf %lf\n", X, E, E / fabs(R));
 
-            // if (R != 0.0)
-            //     printf("%lf %lf %lf\n", X, D, D / R);
-            // else
-            //     printf("%lf %lf\n", X, D);
             break;
 
         case 'I':
@@ -195,7 +226,7 @@ int main(int argc, char *argv[])
             sscanf(optarg, "%d:%lf:%lf:%lf:%lf", &F, &A, &B, &E, &R);
 
             // calculate integral
-            double I = integral(units[F - 1].f, A, B, E);
+            double I = integral(funcs[F - 1], A, B, E);
 
             // calculate absolute error
             E = fabs(I - R);
@@ -206,21 +237,63 @@ int main(int argc, char *argv[])
             break;
 
         default:
-            printf("?? getopt returned character code 0%o ??\n", c);
+            printf("try \"./integral --help\" for learning supported options\n");
         }
     }
 
-    if (optind < argc)
-    {
-        printf("non-option ARGV-elements: ");
-        while (optind < argc)
-            printf("%s ", argv[optind++]);
-        printf("\n");
-    }
     if (argc == 1)
     {
-        // TODO: root(f1, f2), root(f1, f3), root(f2, f3), integral(...)
-        printf("TBA\n");
+        struct integral_unit
+        {
+            double x;
+            afunc *f;
+            afunc *g;
+        } iunits[N];
+
+        // find roots
+        for (size_t i = 0; i < N; ++i)
+        {
+            iunits[i].x = root(units[i].f, units[i].g, units[i].L, units[i].R, eps1);
+            iunits[i].f = units[i].f;
+            iunits[i].g = units[i].g;
+        }
+        // sort roots (overkill, just as whole this task)
+        qsort(iunits, N, sizeof(struct integral_unit), cmp);
+
+        // I - accumulated area of given figure
+        double I = 0;
+        if (N == 0)
+        {
+            printf("%lf\n", I);
+            return 0;
+        }
+
+        // f & g - borders of figure on current segment
+        afunc *f = iunits[0].f;
+        afunc *g = iunits[0].g;
+
+        // iterate over segments
+        for (size_t i = 1; i < N; ++i)
+        {
+            // area of new part is |I_f - I_g|
+            double I_f = integral(f, iunits[i - 1].x, iunits[i].x, eps2);
+            double I_g = integral(g, iunits[i - 1].x, iunits[i].x, eps2);
+
+            // add area of new part of the figure
+            I += fabs(I_f - I_g);
+
+            // update functions
+            if (f == iunits[i].f)
+                f = iunits[i].g;
+            else if (f == iunits[i].g)
+                f = iunits[i].f;
+            else if (g == iunits[i].f)
+                g = iunits[i].g;
+            else
+                g = iunits[i].f;
+        }
+
+        printf("%lf\n", I);
     }
     return 0;
 }
