@@ -23,10 +23,10 @@ double f4(double x)
     return log(1 + x);
 }
 
-// x ^ {1/3}
+// x ^ {1/4}
 double f5(double x)
 {
-    return pow(x, 1.0 / 3.0);
+    return pow(x, 1.0 / 4.0);
 }
 
 // sqrt(4 - x^2)
@@ -171,12 +171,21 @@ int main(int argc, char *argv[])
             static afunc *funcs[] = {f1, f2, f3, f4, f5, f6};
 
         case 'h':
+            printf("Run without options calculates the area of figure enclosed by task functions\n");
+            printf("Supported options:\n");
             printf(
-                "\t--help\t\t-h\tshows this window\n"
-                "\t--root\t\t-r\tTBA\n"
-                "\t--iterations\t-i\tTBA\n"
-                "\t--test-root\t-R\tTBA\n"
-                "\t--test-integral\t-I\ttest integral() function\n");
+                "  long_opt\t |  opt  | \targ\t | description\n"
+                "  ----------------------------------------------------\n"
+                "  --help\t |  -h   | \tNO\t | shows this window\n"
+                "  --root\t |  -r   | \tNO\t | finds roots of functions given in task\n"
+                "  --iterations\t |  -i   | \tNO\t | finds number of iterations to find roots of functions given in task\n"
+                "  --test-root\t |  -R   | F1:F2:A:B:E:R | test root() function\n"
+                "  --test-integral|  -I   |  F:A:B:E:R\t | test integral() function\n\n");
+            printf("F, F1, F2 - index of function (1 to 6)\n");
+            printf("A, B - borders of segment (double, double)\n");
+            printf("E - epsilon, precision (double)\n");
+            printf("R - correct answer for tested input (double)\n");
+
             break;
 
         case 'r':

@@ -1,15 +1,4 @@
-CFLAGS ?= -O2 -g
-
 CFLAGS += -std=gnu99
-
-CFLAGS += -Wall -Werror -Wformat-security -Wignored-qualifiers -Winit-self \
-	-Wswitch-default -Wpointer-arith -Wtype-limits -Wempty-body \
-	-Wstrict-prototypes -Wold-style-declaration -Wold-style-definition \
-	-Wmissing-parameter-type -Wmissing-field-initializers -Wnested-externs \
-	-Wstack-usage=4096 -Wmissing-prototypes -Wfloat-equal -Wabsolute-value
-
-CFLAGS += -fsanitize=undefined -fsanitize-undefined-trap-on-error
-
 CC += -m32 -no-pie -fno-pie
 
 LDLIBS = -lm
@@ -31,5 +20,13 @@ clean:
 
 
 .PHONY: test
-test: $(wildcard *.c)
-	ls -la $?
+
+test: integral
+	./integral -R 5:6:0.0:2.0:0.0001:1.6481
+	./integral -R 3:4:-0.5:3.0:0.0001:0.669
+	./integral -R 4:6:-0.5:2.0:0.0001:1.7296
+
+	./integral -I 4:0.0:3.0:0.000001:2.545177
+	./integral -I 5:1.0:4.0:0.000001:3.725483
+	./integral -I 6:-2.0:0.0:0.000001:3.141593
+	
