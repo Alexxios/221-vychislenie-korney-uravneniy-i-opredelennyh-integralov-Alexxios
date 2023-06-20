@@ -174,13 +174,13 @@ int main(int argc, char *argv[])
             printf("Run without options calculates the area of figure enclosed by task functions\n");
             printf("Supported options:\n");
             printf(
-                "  long_opt\t |  opt  | \targ\t | description\n"
+                "  long_opt\t\t|  opt  | \targ\t | description\n"
                 "  ----------------------------------------------------\n"
-                "  --help\t |  -h   | \tNO\t | shows this window\n"
-                "  --root\t |  -r   | \tNO\t | finds roots of functions given in task\n"
-                "  --iterations   |  -i   | \tNO\t | finds number of iterations to find roots of functions given in task\n"
-                "  --test-root\t |  -R   | F1:F2:A:B:E:R | test root() function\n"
-                "  --test-integral|  -I   |  F:A:B:E:R\t | test integral() function\n\n");
+                "  --help\t\t|  -h   | \tNO\t | shows this window\n"
+                "  --root\t\t|  -r   | \tNO\t | finds roots of functions given in task\n"
+                "  --iterations\t\t|  -i   | \tNO\t | finds number of iterations to find roots of functions given in task\n"
+                "  --test-root\t\t|  -R   | F1:F2:A:B:E:R\t | test root() function\n"
+                "  --test-integral\t|  -I   |  F:A:B:E:R\t | test integral() function\n\n");
             printf("F, F1, F2 - index of function (1 to 6)\n");
             printf("A, B - borders of segment (double, double)\n");
             printf("E - epsilon, precision (double)\n");
