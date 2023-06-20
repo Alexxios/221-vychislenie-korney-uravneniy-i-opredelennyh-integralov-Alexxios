@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
                 "  ----------------------------------------------------\n"
                 "  --help\t |  -h   | \tNO\t | shows this window\n"
                 "  --root\t |  -r   | \tNO\t | finds roots of functions given in task\n"
-                "  --iterations\t |  -i   | \tNO\t | finds number of iterations to find roots of functions given in task\n"
+                "  --iterations   |  -i   | \tNO\t | finds number of iterations to find roots of functions given in task\n"
                 "  --test-root\t |  -R   | F1:F2:A:B:E:R | test root() function\n"
                 "  --test-integral|  -I   |  F:A:B:E:R\t | test integral() function\n\n");
             printf("F, F1, F2 - index of function (1 to 6)\n");
